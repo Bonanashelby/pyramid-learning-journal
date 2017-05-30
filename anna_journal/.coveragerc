@@ -1,0 +1,13 @@
+[run]
+source = anna_journal
+omit =
+    anna_journal/test*
+    anna_journal/models*
+    anna_journal/scripts*
+    anna_journal/views/notfound.py
+    anna_journal/views/__init__.py
+    anna_journal/routes.py
+    anna_journal/__init__.py
+
+[report]
+show_missing = True
