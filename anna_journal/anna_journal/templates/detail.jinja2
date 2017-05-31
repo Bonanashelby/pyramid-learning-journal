@@ -1,7 +1,7 @@
 {% extends "layout.jinja2" %}
 {% block content %}
     <div>Title {{ entry.title }} Date: {{ entry.creation_date }}
-      <p>{{ entry.boduy }}</p>
+      <p>{{ entry.body }}</p>
       <a href="{{ request.route_url('list_view') }}"><button>Home</button></a>
       <a href="{{ request.route_url('update_view', id=entry.id) }}"><button>Update</button></a>
     </div>
