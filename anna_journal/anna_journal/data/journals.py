@@ -1,14 +1,14 @@
 """Journals from the class."""
 
-journals = [
+JOURNALS = [
     {
-        'id': 1,
+        'id': 0,
         'title': "Week 3 - Day 2 (off Monday)",
         'creation_date': '5/30/2017',
         'body': "Today we worked with pyramid and that was a really interesting thing to see. I feel like with pyramid it's a lot to get at once, so I'm not really sure that I know exactly what Ely and I did today in pair programming. We both got our sites up and deployed to heroku, but I'm not sure what happened in between those two steps, but I know something did. I reviewed over the jinja2 for class tomorrow and that looks like it ought to be fun. We also talked about some project ideas for the upcoming midterm week and that was a lot of fun. We definitely had a good mix of ideas to choose from, so it's going to be hard to make a list tonight. I don't have much in my learning journals html, but I'm going to try to work on that tonight. Everyone said week 2 was the most intense, but personally I feel like it's going to be week 3. Today was a good day."
     },
     {
-        'id': 2,
+        'id': 1,
         'title': "Week 2 - Day 10",
         'creation_date': '5/27/2017',
         'body': "Today we did our first whiteboard data structure assignment and that was pretty cool. We worked on a reverse linked list for that assignment which was similar to our single linked list, but backwards. After that we had a talk from 3 previous students and that was really nice to see what life after code fellows can be like. There was a partner power hour and then we all dove back in to working on our server assignments and our data structures. We got our data structure finished on Friday, but Casey and I have some more to do on our servers assignment. I'm not 100% sure we're going to complete this assignment completely, but I think that's going to be okay. From talking to other students and some previous students, I get the vibe that some projects are going to be more of the do what you can and to the best of your ability, but you'll just have to turn them in not completely done and that's okay. Today was a good day."
