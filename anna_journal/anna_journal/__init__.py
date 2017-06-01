@@ -5,8 +5,7 @@ def main(global_config, **settings):
     """Return a Pyramid WSGI application."""
     config = Configurator(settings=settings)
     config.include('pyramid_jinja2')
-    # config.include('.models')
-    # config.include('.views')
+    config.include('.models')
     config.include('.routes')
     config.scan()
     return config.make_wsgi_app()

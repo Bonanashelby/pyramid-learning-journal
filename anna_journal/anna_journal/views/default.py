@@ -1,12 +1,13 @@
 """Views for Learning Journal."""
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPNotFound
-from anna_journal.data.journals import JOURNALS
+from anna_journal.models import Journals
 
 
 @view_config(route_name='list_view', renderer='../templates/index.jinja2')
 def list_view(request):
     """Display list of journal entries."""
+    JOURNALS = request.dbsession.query(Journals).all()
     return {
         'journals': JOURNALS
     }
@@ -16,7 +17,7 @@ def list_view(request):
 def detail_view(request):
     """View single journal entry."""
     entry_id = int(request.matchdict['id'])
-    entry = JOURNALS[entry_id]
+    entry = request.dbsession.query(Journals).get(entry_id)
     return {
         'entry': entry
     }

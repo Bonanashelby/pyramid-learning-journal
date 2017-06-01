@@ -18,7 +18,8 @@ requires = [
     'zope.sqlalchemy',
     'waitress',
     'ipython',
-    'pyramid_ipython'
+    'pyramid_ipython',
+    'psycopg2'
 ]
 
 tests_require = [
@@ -55,7 +56,7 @@ setup(
             'main = anna_journal:main',
         ],
         'console_scripts': [
-            'initialize_anna_journal_db = anna_journal.scripts.initializedb:main',
+            'initializedb = anna_journal.scripts.initializedb:main',
         ],
     },
 )
