@@ -16,7 +16,7 @@ from ..models import (
     get_tm_session,
     )
 
-from anna_journal.data.journals import JOURNALS
+# from anna_journal.data.journals import JOURNALS
 from ..models import Journals
 from datetime import datetime
 
