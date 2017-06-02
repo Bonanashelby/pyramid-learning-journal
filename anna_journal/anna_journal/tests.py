@@ -111,6 +111,13 @@ def add_models(dummy_request):
     dummy_request.db_session.add_all(JOUNRAL_LIST)
 
 
+def test_list_view_returns_empty_when_database_empty(dummy_request):
+    """List view returns nothing when there is no data."""
+    from anna_journal.views.default import list_view
+    response = list_view(dummy_request)
+    assert len(response['journals']) == 0
+
+
 # @pytest.fixture
 # def list_response():
 #     """Return a response from the list page."""
