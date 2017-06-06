@@ -1,22 +1,22 @@
+"""Test file for testing the application."""
 import pytest
 from pyramid import testing
 import transaction
 # import io
 # import os
-import datetime 
+import datetime
 from anna_journal.models import (
-        Journals,
-        get_tm_session
+    Journals,
+    get_tm_session
 )
 from anna_journal.models.meta import Base
 from faker import Faker
 import random
 
 
-# HERE = os.path.dirname(__file__)
 FAKE_FACTORY = Faker()
 CATEGORIES = ["rent", "utilities", "groceries", "food", "netflix", "booze"]
-JOUNRAL_LIST = [Journals(
+JOURNAL_LIST = [Journals(
     title=random.choice(CATEGORIES),
     body=FAKE_FACTORY.text(50),
     creation_date=datetime.datetime.now(),
@@ -38,6 +38,7 @@ def configuration(request):
         'sqlalchemy.url': 'postgres:///test_journals'
     })
     config.include("anna_journal.models")
+    config.include("anna_journal.routes")
 
     def teardown():
         testing.tearDown()
@@ -47,7 +48,7 @@ def configuration(request):
 
 
 @pytest.fixture
-def db_session(configuration, request):
+def dbsession(configuration, request):
     """Create a session for interacting with the test database.
 
     This uses the dbsession_factory on the configurator instance to create a
@@ -68,23 +69,71 @@ def db_session(configuration, request):
 
 
 @pytest.fixture
-def dummy_request(db_session):
+def dummy_request(dbsession):
     """Instantiate a fake HTTP Request, complete with a database session.
     This is a function-level fixture, so every new request will have a
     new database session.
     """
-    return testing.DummyRequest(db_session=db_session)
+    return testing.DummyRequest(dbsession=dbsession)
 
 
-def test_model_gets_added(db_session):
-    assert len(db_session.query(Journals).all()) == 0
+@pytest.fixture(scope="session")
+def testapp(request):
+    from webtest import TestApp
+    from anna_journal import main
+
+    app = main({}, **{"sqlalchemy.url": "postgres:///test_journals"})
+    testapp = TestApp(app)
+
+    SessionFactory = app.registry["dbsession_factory"]
+    engine = SessionFactory().bind
+    Base.metadata.create_all(bind=engine)
+
+    def tearDown():
+        Base.metadata.drop_all(bind=engine)
+
+    request.addfinalizer(tearDown)
+
+    return testapp
+
+
+@pytest.fixture
+def fill_the_db(testapp):
+    SessionFactory = testapp.app.registry["dbsession_factory"]
+    with transaction.manager:
+        dbsession = get_tm_session(SessionFactory, transaction.manager)
+        dbsession.add_all(JOUNRAL_LIST)
+
+    return dbsession
+
+
+@pytest.fixture
+def add_models(dummy_request):
+    """Add a bunch of model instances to the database.
+
+    Every test that includes this fixture will add new random expenses.
+    """
+    dummy_request.dbsession.add_all(JOURNAL_LIST)
+
+
+@pytest.fixture
+def empty_db(testapp):
+    """Tear down the database and add a fresh table."""
+    SessionFactory = testapp.app.registry["dbsession_factory"]
+    engine = SessionFactory().bind
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+
+def test_model_gets_added(dbsession):
+    assert len(dbsession.query(Journals).all()) == 0
     model = Journals(
         title=u"Fake Category",
         body=u"Some description text",
         creation_date=datetime.datetime.now(),
     )
-    db_session.add(model)
-    assert len(db_session.query(Journals).all()) == 1
+    dbsession.add(model)
+    assert len(dbsession.query(Journals).all()) == 1
 
 
 def test_list_view_returns_dict(dummy_request):
@@ -98,17 +147,8 @@ def test_list_view_returns_count_matching_database(dummy_request):
     """Home view response matches database count."""
     from anna_journal.views.default import list_view
     response = list_view(dummy_request)
-    query = dummy_request.db_session.query(Journals)
+    query = dummy_request.dbsession.query(Journals)
     assert len(response['journals']) == query.count()
-
-
-@pytest.fixture
-def add_models(dummy_request):
-    """Add a bunch of model instances to the database.
-
-    Every test that includes this fixture will add new random expenses.
-    """
-    dummy_request.db_session.add_all(JOUNRAL_LIST)
 
 
 def test_list_view_returns_empty_when_database_empty(dummy_request):
@@ -117,6 +157,59 @@ def test_list_view_returns_empty_when_database_empty(dummy_request):
     response = list_view(dummy_request)
     assert len(response['journals']) == 0
 
+
+def test_create_view_post_empty_is_empty_dict(dummy_request):
+    """POST requests without data should return an empty dictionary."""
+    from anna_journal.views.default import create_view
+    dummy_request.method = "POST"
+    response = create_view(dummy_request)
+    assert response == {}
+
+
+def test_create_view_post_incomplete_data_returns_data(dummy_request):
+    """POST data that is incomplete just gets returned to the user."""
+    from anna_journal.views.default import create_view
+    dummy_request.method = "POST"
+    data_dict = {"title": random.choice(CATEGORIES)}
+    dummy_request.POST = data_dict
+    response = create_view(dummy_request)
+    assert response == data_dict
+
+
+def test_create_view_post_good_data_is_302(dummy_request):
+    """POST request with correct data should redirect with status code 302."""
+    from anna_journal.views.default import create_view
+    dummy_request.method = "POST"
+    data_dict = {
+        'title': random.choice(CATEGORIES),
+        'body': FAKE_FACTORY.text(100)
+    }
+    dummy_request.POST = data_dict
+    response = create_view(dummy_request)
+    assert response.status_code == 302
+
+
+def test_new_entry_redirects_to_home(testapp, empty_db):
+    """When redirection is followed, result is home page."""
+    data_dict = {
+        'title': random.choice(CATEGORIES),
+        'body': FAKE_FACTORY.text(100)
+    }
+    response = testapp.post('/journal/form', data_dict)
+    home_path = testapp.routes_mapper.get_route('/').path
+    assert response.location == SITE_ROOT + home_path
+
+
+def test_new_entry_redirection_lands_on_home(testapp, empty_db):
+    """When redirection is followed, result is home page."""
+    data_dict = {
+        'title': random.choice(CATEGORIES),
+        'body': FAKE_FACTORY.text(100)
+    }
+    response = testapp.post('/form', data_dict)
+    next_response = response.follow()
+    home_response = testapp.get('/')
+    assert next_response.text == home_response.text
 
 # @pytest.fixture
 # def list_response():
