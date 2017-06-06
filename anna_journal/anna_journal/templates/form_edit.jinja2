@@ -5,14 +5,12 @@
                 <table>
                             <tr>
                                     <td><label for="title">Title: </label></td>
-                                    <td><type="text" name="title" value="{{ title }}"required /></td>
+                                    <td><input type="text" name="title" value="{{ title }}"required /></td>
                             </tr>
                             <tr>
                                     <td><label for="body">Description: </label></td>
                                     <td>
-                                            <textarea name="body" placeholder="Edit your entry">
-                                                    {{ body }}
-                                            </textarea>
+                                            <textarea name="body">{{ body }}</textarea>
                                     </td>
                             </tr>
                             <tr>
