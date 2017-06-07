@@ -1,5 +1,7 @@
+"""The init for my app."""
 from pyramid.config import Configurator
-import os 
+import os
+
 
 def main(global_config, **settings):
     """Return a Pyramid WSGI application."""
