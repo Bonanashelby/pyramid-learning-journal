@@ -44,7 +44,7 @@ def detail_view(request):
     }
 
 
-@view_config(route_name='create_view', renderer='../templates/form.jinja2', permission='secret')
+@view_config(route_name='create_view', renderer='../templates/form.jinja2', permission='secret', require_csrf=True)
 def create_view(request):
     """Create a new view."""
     if request.method == "POST" and request.POST:
@@ -63,10 +63,7 @@ def create_view(request):
 
 
 @view_config(
-    route_name='update_view',
-    renderer='../templates/form_edit.jinja2',
-    permission='secret'
-)
+    route_name='update_view', renderer='../templates/form_edit.jinja2', permission='secret', require_csrf=True)
 def update_view(request):
     """Update an existing view."""
     entry_id = int(request.matchdict['id'])
