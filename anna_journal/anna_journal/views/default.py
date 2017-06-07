@@ -3,7 +3,26 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
 from pyramid.httpexceptions import HTTPNotFound
 from anna_journal.models import Journals
-from datetime import datetime
+from pyramid.security import remember, forget
+from anna_journal.security import check_credentials
+
+
+@view_config(route_name='login', renderer='../templates/login.jinja2')
+def login(request):
+    """The login in view for our admin."""
+    if request.method == 'POST':
+        username = request.params.get('username', '')
+        password = request.params.get('password', '')
+        if check_credentials(username, password):
+            headers = remember(request, username)
+            return HTTPFound(location=request.route_url('list_view'), headers=headers)
+    return {}
+
+
+@view_config(route_name='logout')
+def logout(request):
+    headers = forget(request)
+    return HTTPFound(request.route_url('list_view'), headers=headers)
 
 
 @view_config(route_name='list_view', renderer='../templates/index.jinja2')
@@ -25,7 +44,7 @@ def detail_view(request):
     }
 
 
-@view_config(route_name='create_view', renderer='../templates/form.jinja2')
+@view_config(route_name='create_view', renderer='../templates/form.jinja2', permission='secret')
 def create_view(request):
     """Create a new view."""
     if request.method == "POST" and request.POST:
@@ -45,7 +64,8 @@ def create_view(request):
 
 @view_config(
     route_name='update_view',
-    renderer='../templates/form_edit.jinja2'
+    renderer='../templates/form_edit.jinja2',
+    permission='secret'
 )
 def update_view(request):
     """Update an existing view."""
@@ -64,3 +84,4 @@ def update_view(request):
             entry.body = form_data['body']
             request.dbsession.flush()
             return HTTPFound(location=request.route_url('detail_view', id=entry_id))
+
