@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="{{ request.static_path('anna_journal:static/style.css') }}" />
+    <title></title>
+  </head>
+  <body>
+  <a href="{{ request.route_url('login') }}"><button>Login</button></a>
+  <a href="{{ request.route_url('logout') }}"><button>Logout</button></a>
+  <h1>This is my Learning Journal</h1>
+    {% block content %}{% endblock %}
+  </body>
+</html>

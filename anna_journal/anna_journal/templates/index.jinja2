@@ -1,0 +1,10 @@
+{% extends "layout.jinja2" %}
+{% block content %}
+<h1>Testing index</h1>
+<ul>
+    {% for entry in journals %}
+    <li>Title: {{ entry.title }} Date: {{ entry.creation_date }} <a href="{{ request.route_url('detail_view', id=entry.id) }}"><button>See More</button></a></li>
+    <hr />
+    {% endfor %}
+</ul>
+{% endblock %}
