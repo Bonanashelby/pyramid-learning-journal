@@ -1,34 +1,38 @@
 """Views for Learning Journal."""
-from pyramid.response import Response
-import io
-import os
-
-HERE = os.path.dirname(__file__)
+from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPNotFound
+from anna_journal.models import Journals
 
 
+@view_config(route_name='list_view', renderer='../templates/index.jinja2')
 def list_view(request):
-    """The list of journal entries."""
-    with io.open(os.path.join(HERE, '../templates/index.html')) as the_file:
-        imported_text = the_file.read()
-    return Response(imported_text)
+    """Display list of journal entries."""
+    JOURNALS = request.dbsession.query(Journals).all()
+    return {
+        'journals': JOURNALS
+    }
 
 
+@view_config(route_name='detail_view', renderer='../templates/detail.jinja2')
 def detail_view(request):
-    """A single journal entry."""
-    with io.open(os.path.join(HERE, '../templates/detail.html')) as the_file:
-        imported_text = the_file.read()
-    return Response(imported_text)
+    """View single journal entry."""
+    entry_id = int(request.matchdict['id'])
+    entry = request.dbsession.query(Journals).get(entry_id)
+    return {
+        'entry': entry
+    }
 
 
+@view_config(route_name='create_view', renderer='../templates/form.jinja2')
 def create_view(request):
-    """Creating a new view."""
-    with io.open(os.path.join(HERE, '../templates/form.html')) as the_file:
-        imported_text = the_file.read()
-    return Response(imported_text)
+    """Create a new view."""
+    return {}
 
 
+@view_config(
+    route_name='update_view',
+    renderer='../templates/form_edit.jinja2'
+)
 def update_view(request):
-    """Updating an existing view."""
-    with io.open(os.path.join(HERE, '../templates/form_edit.html')) as the_file:
-        imported_text = the_file.read()
-    return Response(imported_text)
+    """Update an existing view."""
+    return {}
