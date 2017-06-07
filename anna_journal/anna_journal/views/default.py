@@ -29,20 +29,16 @@ def detail_view(request):
 def create_view(request):
     """Create a new view."""
     if request.method == "POST" and request.POST:
-        form_names = ['title', 'body']
 
-        if sum([key in request.POST for key in form_names]) == len(form_names):
-
-            if ' ' not in list(request.POST.values()):
-                form_data = request.POST
-                new_entry = Journals(
-                    title=form_data['title'],
-                    body=form_data['body'],
-                    creation_date=datetime.now(),
-                )
-                request.dbsession.add(new_entry)
-                return HTTPFound(location=request.route_url('list_view'))
-            return request.POST
+        if request.POST['title'] and request.POST['body']:
+            form_data = request.POST
+            new_entry = Journals(
+                title=form_data['title'],
+                body=form_data['body'],
+                creation_date=datetime.now(),
+            )
+            request.dbsession.add(new_entry)
+            return HTTPFound(location=request.route_url('list_view'))
 
     return request.POST
 
@@ -53,4 +49,18 @@ def create_view(request):
 )
 def update_view(request):
     """Update an existing view."""
-    return {}
+    entry_id = int(request.matchdict['id'])
+    entry = request.dbsession.query(Journals).get(entry_id)
+    if not entry:
+        return HTTPNotFound
+    if request.method == "GET":
+        return {
+            'title': entry.title,
+            'body': entry.body
+        }
+    if request.method == "POST":
+            form_data = request.POST
+            entry.title = form_data['title']
+            entry.body = form_data['body']
+            request.dbsession.flush()
+            return HTTPFound(location=request.route_url('detail_view', id=entry_id))
